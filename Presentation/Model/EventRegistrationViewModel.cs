@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Domain.Extensions;
 using System.ComponentModel.DataAnnotations;
 
 namespace Presentation.Model;
@@ -36,20 +36,10 @@ public class EventRegistrationViewModel
     [Required(ErrorMessage = "Event package detail is required.")]
     public string PackageDetailId { get; set; } = null!;
 
-    public List<SelectItem> CategoryList { get; set; } = new();
-    public List<SelectItem> StatusList { get; set; } = new();
-    public List<SelectItem> PackageDetailList { get; set; } = new();
-
-    public TModel MapTo<TModel>() where TModel : class, new ()
+    public TModel MapTo<TModel>() where TModel : class, new()
     {
-        //Chatgpt hjälpe här
-        return this.MapTo<TModel>();
+        return MappExtensions.MapTo<TModel>(this);
     }
 
 }
 
-public class SelectItem
-{
-    public string Value { get; set; } = null!;
-    public string Text { get; set; } = null!;
-}

@@ -9,9 +9,12 @@ using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class EventService(IEventRepository eventRepository) : IEventService
+public class EventService(IEventRepository eventRepository, IEventCategoryRepository categoryRepository, IEventStatusRepository statusRepository, IEventPackageDetailRepository packageDetailRepository) : IEventService
 {
     private readonly IEventRepository _eventRepository = eventRepository;
+    private readonly IEventCategoryRepository _categoryRepository = categoryRepository;
+    private readonly IEventStatusRepository _statusRepository = statusRepository;
+    private readonly IEventPackageDetailRepository _packageDetailRepository = packageDetailRepository;
 
     public async Task<EventResult<IEnumerable<Event>>> GetAllEventsAsync()
     {
@@ -69,15 +72,15 @@ public class EventService(IEventRepository eventRepository) : IEventService
         {
             await _eventRepository.BeginTransactionAsync();
 
-            var eventCategory = await _eventRepository.ExistsAsync(c => c.CategoryId == request.CategoryId);
+            var eventCategory = await _categoryRepository.ExistsAsync(c => c.Id == request.CategoryId);
             if (!eventCategory.Succeeded)
-                return new EventResult { Succeeded = false, StatusCode = 404, Message = "Category not found"};
+                return new EventResult { Succeeded = false, StatusCode = 404, Message = "Category not found" };
 
-            var eventStatus = await _eventRepository.ExistsAsync(c => c.StatusId == request.StatusId);
+            var eventStatus = await _statusRepository.ExistsAsync(c => c.Id == request.StatusId);
             if (!eventStatus.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Status not found" };
 
-            var eventPackage = await _eventRepository.ExistsAsync(c => c.CategoryId == request.CategoryId);
+            var eventPackage = await _packageDetailRepository.ExistsAsync(c => c.Id == request.PackageDetailId);
             if (!eventPackage.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Package not found" };
 
@@ -170,12 +173,12 @@ public class EventService(IEventRepository eventRepository) : IEventService
             var existingEvent = eventResult.Result.MapTo<EventEntity>();
             var deleteResult = await _eventRepository.DeleteAsync(existingEvent);
             await _eventRepository.CommitTransactionAsync();
-            return deleteResult.Succeeded 
+            return deleteResult.Succeeded
                 ? new EventResult { Succeeded = true, StatusCode = 200, Message = "Event deleted successfully." }
                 : new EventResult { Succeeded = false, StatusCode = 500, Message = "An error occurred while deleting the event." };
 
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             await _eventRepository.RollbackTransactionAsync();
             return new EventResult { Succeeded = false, StatusCode = 500, Message = $"An error occurred while deleting the event. {ex.Message}" };

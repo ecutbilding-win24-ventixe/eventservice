@@ -1,12 +1,10 @@
 ﻿using Business.Interfaces;
 using Business.Models.Requests;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using Presentation.Model;
 
 
-namespace Data.Controllers;
+namespace Presentation.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -33,7 +31,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateEvent([FromBody] EventRegistrationViewModel form)
+    public async Task<IActionResult> CreateEvent(EventRegistrationViewModel form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -46,7 +44,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateEvent(string id, [FromBody] EventUpdateViewModel form)
+    public async Task<IActionResult> UpdateEvent(string id, EventUpdateViewModel form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
