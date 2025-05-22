@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250516130142_init")]
-    partial class Init
+    [Migration("20250522115509_EventUpdatePackageControl")]
+    partial class EventUpdatePackageControl
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,10 +62,6 @@ namespace Data.Migrations
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("EventPackageDetailId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -86,26 +82,47 @@ namespace Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("EventPackageDetailId");
-
                     b.HasIndex("StatusId");
 
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("Data.Entities.EventPackageDetailEntity", b =>
+            modelBuilder.Entity("Data.Entities.EventPackageEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Currency")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PackageTypeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Placement")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("Price")
+                    b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("PackageTypeId");
+
+                    b.ToTable("EventPackages");
+                });
+
+            modelBuilder.Entity("Data.Entities.EventPackageTypeEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SeatingArragement")
                         .HasColumnType("nvarchar(max)");
@@ -116,7 +133,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EventPackagesDetail");
+                    b.ToTable("EventPackagesType");
                 });
 
             modelBuilder.Entity("Data.Entities.EventStatusEntity", b =>
@@ -145,12 +162,6 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Entities.EventPackageDetailEntity", "PackageDetail")
-                        .WithMany()
-                        .HasForeignKey("EventPackageDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Data.Entities.EventStatusEntity", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -159,9 +170,31 @@ namespace Data.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("PackageDetail");
-
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("Data.Entities.EventPackageEntity", b =>
+                {
+                    b.HasOne("Data.Entities.EventEntity", "Event")
+                        .WithMany("Packages")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.Entities.EventPackageTypeEntity", "PackageType")
+                        .WithMany()
+                        .HasForeignKey("PackageTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("PackageType");
+                });
+
+            modelBuilder.Entity("Data.Entities.EventEntity", b =>
+                {
+                    b.Navigation("Packages");
                 });
 #pragma warning restore 612, 618
         }

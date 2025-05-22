@@ -79,9 +79,11 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             if (!eventStatus.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Status not found" };
 
+            var newEventId = Guid.NewGuid().ToString();
 
             var newEvent = new EventEntity
             {
+                Id = newEventId,
                 Name = request.Name,
                 Description = request.Description,
                 EventDate = request.EventDate,
@@ -93,6 +95,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
                 Packages = request.Packages.Select(p => new EventPackageEntity
                 {
                     Id = Guid.NewGuid().ToString(),
+                    EventId = newEventId,
                     PackageTypeId = p.PackageTypeId,
                     Placement = p.Placement,
                     Price = p.Price,

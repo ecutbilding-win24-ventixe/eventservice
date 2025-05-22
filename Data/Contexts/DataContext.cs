@@ -11,5 +11,16 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<EventPackageEntity> EventPackages { get; set; }
     public DbSet<EventPackageTypeEntity> EventPackagesType { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<EventPackageEntity>()
+            .HasOne(p => p.Event)
+            .WithMany(e => e.Packages)
+            .HasForeignKey(p => p.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
 }
 

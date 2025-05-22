@@ -36,28 +36,28 @@ public class EventsController(IEventService eventService) : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var request = form.MapTo<CreateEventRequest>();
+        var request = form.ToCreateRequest();
         var result = await _eventService.CreateEventAsync(request);
         return result.Succeeded
             ? Ok(result)
             : StatusCode(result.StatusCode, result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateEvent(string id, EventUpdateViewModel form)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+    //[HttpPut("{id}")]
+    //public async Task<IActionResult> UpdateEvent(string id, EventUpdateViewModel form)
+    //{
+    //    if (!ModelState.IsValid)
+    //        return BadRequest(ModelState);
         
-        if (id != form.Id)
-            return BadRequest("Event ID mismatch.");
+    //    if (id != form.Id)
+    //        return BadRequest("Event ID mismatch.");
 
-        var request = form.MapTo<UpdateEventRequest>();
-        var result = await _eventService.UpdateEventAsync(request);
-        return result.Succeeded
-            ? Ok(result)
-            : StatusCode(result.StatusCode, result);
-    }
+    //    var request = form.MapTo<UpdateEventRequest>();
+    //    var result = await _eventService.UpdateEventAsync(request);
+    //    return result.Succeeded
+    //        ? Ok(result)
+    //        : StatusCode(result.StatusCode, result);
+    //}
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvent(string id)

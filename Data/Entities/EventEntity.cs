@@ -23,6 +23,6 @@ public class EventEntity
     public string StatusId { get; set; } = null!;
     public EventStatusEntity Status { get; set; } = null!;
 
-    public ICollection<EventPackageEntity> Packages { get; set; } = [];
+    public ICollection<EventPackageEntity> Packages { get; set; } = new List<EventPackageEntity>();
 
 }

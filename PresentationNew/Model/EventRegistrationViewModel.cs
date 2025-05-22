@@ -1,4 +1,6 @@
-﻿using Domain.Extensions;
+﻿using Business.Models.Requests;
+using Business.Models;
+using Domain.Extensions;
 using System.ComponentModel.DataAnnotations;
 
 namespace PresentationNew.Model;
@@ -38,11 +40,29 @@ public class EventRegistrationViewModel
     [MinLength(1, ErrorMessage = "At least one package is required.")]
     public List<EventPackageViewModel> Packages { get; set; } = [];
 
-
-
-    public TModel MapTo<TModel>() where TModel : class, new()
+    public CreateEventRequest ToCreateRequest()
     {
-        return MappExtensions.MapTo<TModel>(this);
+        return new CreateEventRequest
+        {
+            Name = Name,
+            Description = Description,
+            EventDate = EventDate,
+            Location = Location,
+            Capacity = Capacity,
+            ImageUrl = ImageUrl,
+            CategoryId = CategoryId,
+            StatusId = StatusId,
+            Packages = Packages.Select(p => new EventPackageRequest
+            {
+                PackageTypeId = p.PackageTypeId,
+                Placement = p.Placement,
+                Price = p.Price,
+                Currency = p.Currency
+            }).ToList()
+        };
     }
 
+
 }
+
+
