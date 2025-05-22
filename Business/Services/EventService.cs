@@ -9,12 +9,12 @@ using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class EventService(IEventRepository eventRepository, IEventCategoryRepository categoryRepository, IEventStatusRepository statusRepository, IEventPackageDetailRepository packageDetailRepository) : IEventService
+public class EventService(IEventRepository eventRepository, IEventCategoryRepository categoryRepository, IEventStatusRepository statusRepository, IEventPackageRepository packageDetailRepository) : IEventService
 {
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly IEventCategoryRepository _categoryRepository = categoryRepository;
     private readonly IEventStatusRepository _statusRepository = statusRepository;
-    private readonly IEventPackageDetailRepository _packageDetailRepository = packageDetailRepository;
+    private readonly IEventPackageRepository _packageDetailRepository = packageDetailRepository;
 
     public async Task<EventResult<IEnumerable<Event>>> GetAllEventsAsync()
     {
@@ -24,7 +24,6 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
                 [
                     x => x.Category,
                     x => x.Status,
-                    x => x.PackageDetail
                 ]
             );
 
@@ -46,7 +45,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
 
         try
         {
-            var result = await _eventRepository.GetAsync(x => x.Id == eventId, x => x.Category, x => x.Status, x => x.PackageDetail);
+            var result = await _eventRepository.GetAsync(x => x.Id == eventId);
             if (!result.Succeeded || result.Result == null)
                 return new EventResult<Event> { Succeeded = false, StatusCode = 404, Message = "Event not found.You need to work harderrrr." };
 
@@ -80,9 +79,6 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             if (!eventStatus.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Status not found" };
 
-            var eventPackage = await _packageDetailRepository.ExistsAsync(c => c.Id == request.PackageDetailId);
-            if (!eventPackage.Succeeded)
-                return new EventResult { Succeeded = false, StatusCode = 404, Message = "Package not found" };
 
             var newEvent = new EventEntity
             {
@@ -94,7 +90,14 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
                 ImageUrl = "",
                 CategoryId = request.CategoryId,
                 StatusId = request.StatusId,
-                EventPackageDetailId = request.PackageDetailId,
+                Packages = request.Packages.Select(p => new EventPackageEntity
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    PackageTypeId = p.PackageTypeId,
+                    Placement = p.Placement,
+                    Price = p.Price,
+                    Currency = p.Currency
+                }).ToList()
             };
 
             var result = await _eventRepository.AddAsync(newEvent);
@@ -118,23 +121,39 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
         try
         {
             await _eventRepository.BeginTransactionAsync();
-            var eventResult = await _eventRepository.GetAsync(e => e.Id == request.Id);
-            if (!eventResult.Succeeded || eventResult.Result == null)
+
+
+            var existingEventResult = await _eventRepository.GetAsync(
+                e => e.Id == request.Id,
+                e => e.Packages,
+                e => e.Category,
+                e => e.Status
+                );
+
+            if (!existingEventResult.Succeeded || existingEventResult.Result == null)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Event not found." };
 
-            var existingEvent = eventResult.Result.MapTo<EventEntity>();
+            var existingEvent = existingEventResult.Result.MapTo<EventEntity>();
 
-            var eventCategory = await _eventRepository.ExistsAsync(c => c.CategoryId == request.CategoryId);
-            if (!eventCategory.Succeeded)
+            var categoryExists = await _categoryRepository.ExistsAsync(c => c.Id == request.CategoryId);
+            if (!categoryExists.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Category not found" };
 
-            var eventStatus = await _eventRepository.ExistsAsync(c => c.StatusId == request.StatusId);
-            if (!eventStatus.Succeeded)
+            var statusExists = await _statusRepository.ExistsAsync(c => c.Id == request.StatusId);
+            if (!statusExists.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Status not found" };
 
-            var eventPackage = await _eventRepository.ExistsAsync(c => c.CategoryId == request.CategoryId);
-            if (!eventPackage.Succeeded)
-                return new EventResult { Succeeded = false, StatusCode = 404, Message = "Package not found" };
+            foreach (var package in request.Packages)
+            {
+                existingEvent.Packages.Add(new EventPackageEntity
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    PackageTypeId = package.PackageTypeId,
+                    Placement = package.Placement,
+                    Price = package.Price,
+                    Currency = package.Currency
+                });
+            }
 
             existingEvent.Name = request.Name;
             existingEvent.Description = request.Description;
@@ -144,7 +163,6 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             existingEvent.ImageUrl = request.ImageUrl ?? existingEvent.ImageUrl;
             existingEvent.CategoryId = request.CategoryId;
             existingEvent.StatusId = request.StatusId;
-            existingEvent.EventPackageDetailId = request.PackageDetailId;
 
             var updateResult = await _eventRepository.UpdateAsync(existingEvent);
             await _eventRepository.CommitTransactionAsync();

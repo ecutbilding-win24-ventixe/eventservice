@@ -8,7 +8,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<EventEntity> Events { get; set; }
     public DbSet<EventCategoryEntity> EventCategories { get; set; }
     public DbSet<EventStatusEntity> EventStatuses { get; set; }
-    public DbSet<EventPackageDetailEntity> EventPackagesDetail { get; set; }
+    public DbSet<EventPackageEntity> EventPackages { get; set; }
+    public DbSet<EventPackageTypeEntity> EventPackagesType { get; set; }
 
 }
 

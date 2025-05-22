@@ -33,8 +33,12 @@ public class EventRegistrationViewModel
     [Required(ErrorMessage = "Event status is required.")]
     public string StatusId { get; set; } = null!;
 
-    [Required(ErrorMessage = "Event package detail is required.")]
-    public string PackageDetailId { get; set; } = null!;
+
+    [Required]
+    [MinLength(1, ErrorMessage = "At least one package is required.")]
+    public List<EventPackageViewModel> Packages { get; set; } = [];
+
+
 
     public TModel MapTo<TModel>() where TModel : class, new()
     {
@@ -42,4 +46,3 @@ public class EventRegistrationViewModel
     }
 
 }
-

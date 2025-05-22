@@ -25,7 +25,8 @@ public class EventRepository(DataContext context) : BaseRepository<EventEntity, 
             var entity = await query
                 .Include(e => e.Category)
                 .Include(e => e.Status)
-                .Include(e => e.PackageDetail)
+                .Include(e => e.Packages)
+                    .ThenInclude(p => p.PackageType)
                 .FirstOrDefaultAsync(where);
 
             if (entity == null)
@@ -48,16 +49,14 @@ public class EventRepository(DataContext context) : BaseRepository<EventEntity, 
                 {
                     Name = entity.Status.Name,
                 },
-                Packages =
-                [
-                    new() {
-                        Title = entity.PackageDetail.Title,
-                        SeatingArragement = entity.PackageDetail.SeatingArragement,
-                        Placement = entity.PackageDetail.Placement,
-                        Price = entity.PackageDetail.Price,
-                        Currency = entity.PackageDetail.Currency
-                    }
-                ]
+                Packages = entity.Packages.Select(p => new EventPackage
+                {
+                    Title = p.PackageType.Title,
+                    SeatingArragement = p.PackageType.SeatingArragement,
+                    Placement = p.Placement,
+                    Price = p.Price,
+                    Currency = p.Currency
+                }).ToList(),
             };
 
             return new RepositoryResult<Event>{ Succeeded = true, StatusCode = 200, Result = domainModel };
@@ -89,9 +88,10 @@ public class EventRepository(DataContext context) : BaseRepository<EventEntity, 
             }
 
             query = query
-                .Include(e => e.Category)
-                .Include(e => e.Status)
-                .Include(e => e.PackageDetail);
+            .Include(e => e.Category)
+            .Include(e => e.Status)
+            .Include(e => e.Packages)
+                .ThenInclude(p => p.PackageType);
 
             if (sortBy != null)
                 query = orderByDescending ? query.OrderByDescending(sortBy) : query.OrderBy(sortBy);
@@ -115,16 +115,14 @@ public class EventRepository(DataContext context) : BaseRepository<EventEntity, 
                 {
                     Name = entity.Status.Name,
                 },
-                Packages =
-                [
-                    new() {
-                        Title = entity.PackageDetail.Title,
-                        SeatingArragement = entity.PackageDetail.SeatingArragement,
-                        Placement = entity.PackageDetail.Placement,
-                        Price = entity.PackageDetail.Price,
-                        Currency = entity.PackageDetail.Currency
-                    }
-                ]
+                Packages = entity.Packages.Select(p => new EventPackage
+                {
+                    Title = p.PackageType.Title,
+                    SeatingArragement = p.PackageType.SeatingArragement,
+                    Placement = p.Placement,
+                    Price = p.Price,
+                    Currency = p.Currency
+                }).ToList()
             }).ToList();
 
             return new RepositoryResult<IEnumerable<Event>> { Succeeded = true, StatusCode = 200, Result = domainModels };

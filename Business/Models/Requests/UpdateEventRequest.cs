@@ -11,5 +11,5 @@ public class UpdateEventRequest
     public string? ImageUrl { get; set; }
     public string CategoryId { get; set; } = null!;
     public string StatusId { get; set; } = null!;
-    public string PackageDetailId { get; set; } = null!;
+    public List<EventPackageRequest> Packages { get; set; } = new();
 }

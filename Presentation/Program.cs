@@ -16,8 +16,8 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
 builder.Services.AddScoped<IEventStatusRepository, EventStatusRepository>();
-builder.Services.AddScoped<IEventPackageDetailRepository, EventPackageDetailRepository>();
-
+builder.Services.AddScoped<IEventPackageRepository, EventPackageRepository>();
+builder.Services.AddScoped<IEventPackageTypeRepository, EventPackageTypeRepository>();
 
 var app = builder.Build();
 app.MapOpenApi();

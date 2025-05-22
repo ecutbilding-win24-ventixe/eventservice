@@ -19,14 +19,10 @@ public class EventEntity
     public string CategoryId { get; set; } = null!;
     public EventCategoryEntity Category { get; set; } = null!;
 
-
     [ForeignKey(nameof(Status))]
     public string StatusId { get; set; } = null!;
     public EventStatusEntity Status { get; set; } = null!;
 
-    
-    [ForeignKey(nameof(PackageDetail))]
-    public string EventPackageDetailId { get; set; } = null!;
-    public EventPackageDetailEntity PackageDetail { get; set; } = null!;
+    public ICollection<EventPackageEntity> Packages { get; set; } = [];
 
 }

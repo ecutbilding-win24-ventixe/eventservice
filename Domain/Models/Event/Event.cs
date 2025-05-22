@@ -13,6 +13,6 @@ public class Event
     public EventCategory Category { get; set; } = null!;
     public EventStatus Status { get; set; } = null!;
 
-    public List<EventPackageDetail> Packages { get; set; } = [];
+    public List<EventPackage> Packages { get; set; } = [];
 
 }
