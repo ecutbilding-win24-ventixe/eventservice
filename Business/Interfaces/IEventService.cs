@@ -11,4 +11,7 @@ public interface IEventService
     Task<EventResult> CreateEventAsync(CreateEventRequest request);
     Task<EventResult> UpdateEventAsync(UpdateEventRequest request);
     Task<EventResult> DeleteEventAsync(string eventId);
+    Task<EventResult<IEnumerable<EventCategory>>> GetAllEventCategoriesAsync();
+    Task<EventResult<IEnumerable<EventPackageType>>> GetAllEventPackagesTypeAsync();
+    Task<EventResult<IEnumerable<EventStatus>>> GetAllEventStatusesAsync();
 }

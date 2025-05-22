@@ -5,16 +5,17 @@ using Data.Entities;
 using Data.Interfaces;
 using Domain.Extensions;
 using Domain.Models.Event;
-using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class EventService(IEventRepository eventRepository, IEventCategoryRepository categoryRepository, IEventStatusRepository statusRepository, IEventPackageRepository packageDetailRepository) : IEventService
+
+public class EventService(IEventRepository eventRepository, IEventCategoryRepository categoryRepository, IEventStatusRepository statusRepository, IEventPackageRepository packageDetailRepository, IEventPackageTypeRepository packageTypeRepository) : IEventService
 {
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly IEventCategoryRepository _categoryRepository = categoryRepository;
     private readonly IEventStatusRepository _statusRepository = statusRepository;
     private readonly IEventPackageRepository _packageDetailRepository = packageDetailRepository;
+    private readonly IEventPackageTypeRepository _packageType = packageTypeRepository;
 
     public async Task<EventResult<IEnumerable<Event>>> GetAllEventsAsync()
     {
@@ -203,6 +204,70 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
         {
             await _eventRepository.RollbackTransactionAsync();
             return new EventResult { Succeeded = false, StatusCode = 500, Message = $"An error occurred while deleting the event. {ex.Message}" };
+        }
+    }
+
+    public async Task<EventResult<IEnumerable<EventCategory>>> GetAllEventCategoriesAsync()
+    {
+        try
+        {
+            var result = await _categoryRepository.GetAllAsync();
+            if (!result.Succeeded || result.Result == null)
+                return new EventResult<IEnumerable<EventCategory>> { Succeeded = false, StatusCode = 404, Message = "Event categories not found." };
+
+            var mappedResult = result.Result.Select(c => new EventCategory
+            {
+                Id = c.Id,
+                Name = c.Name,
+            });
+            return new EventResult<IEnumerable<EventCategory>> { Succeeded = true, StatusCode = 200, Result = mappedResult };
+        }
+        catch (Exception ex)
+        {
+            return new EventResult<IEnumerable<EventCategory>> { Succeeded = false, Message = $"An error occurred while retrieving event categories. {ex.Message}" };
+        }
+    }
+
+    public async Task<EventResult<IEnumerable<EventStatus>>> GetAllEventStatusesAsync()
+    {
+        try
+        {
+            var result = await _statusRepository.GetAllAsync();
+            if (!result.Succeeded || result.Result == null)
+                return new EventResult<IEnumerable<EventStatus>> { Succeeded = false, StatusCode = 404, Message = "Event statuses not found." };
+            var mappedResult = result.Result.Select(s => new EventStatus
+            {
+                Id = s.Id,
+                Name = s.Name,
+            });
+            return new EventResult<IEnumerable<EventStatus>> { Succeeded = true, StatusCode = 200, Result = mappedResult };
+        }
+        catch (Exception ex)
+        {
+            return new EventResult<IEnumerable<EventStatus>> { Succeeded = false, Message = $"An error occurred while retrieving event statuses. {ex.Message}" };
+        }
+    }
+
+    public async Task<EventResult<IEnumerable<EventPackageType>>> GetAllEventPackagesTypeAsync()
+    {
+        try
+        {
+            var result = await _packageType.GetAllAsync();
+            if (!result.Succeeded || result.Result == null)
+                return new EventResult<IEnumerable<EventPackageType>> { Succeeded = false, StatusCode = 404, Message = "Event packages not found." };
+
+            var mappedResult = result.Result.Select(p => new EventPackageType
+            {
+                Id = p.Id,
+                Title = p.Title,
+                SeatingArragement = p.SeatingArragement
+            });
+
+            return new EventResult<IEnumerable<EventPackageType>> { Succeeded = true, StatusCode = 200, Result = mappedResult };
+        }
+        catch (Exception ex)
+        {
+            return new EventResult<IEnumerable<EventPackageType>> { Succeeded = false, Message = $"An error occurred while retrieving event packages. {ex.Message}" };
         }
     }
 }

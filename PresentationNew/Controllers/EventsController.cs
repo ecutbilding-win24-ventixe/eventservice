@@ -48,7 +48,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     //{
     //    if (!ModelState.IsValid)
     //        return BadRequest(ModelState);
-        
+
     //    if (id != form.Id)
     //        return BadRequest("Event ID mismatch.");
 
@@ -63,6 +63,33 @@ public class EventsController(IEventService eventService) : ControllerBase
     public async Task<IActionResult> DeleteEvent(string id)
     {
         var result = await _eventService.DeleteEventAsync(id);
+        return result.Succeeded
+            ? Ok(result)
+            : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetEventCategories()
+    {
+        var result = await _eventService.GetAllEventCategoriesAsync();
+        return result.Succeeded
+            ? Ok(result)
+            : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("statuses")]
+    public async Task<IActionResult> GetEventStatuses()
+    {
+        var result = await _eventService.GetAllEventStatusesAsync();
+        return result.Succeeded
+            ? Ok(result)
+            : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("packages")]
+    public async Task<IActionResult> GetEventPackages()
+    {
+        var result = await _eventService.GetAllEventPackagesTypeAsync();
         return result.Succeeded
             ? Ok(result)
             : StatusCode(result.StatusCode, result);
