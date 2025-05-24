@@ -127,7 +127,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             await _eventRepository.BeginTransactionAsync();
 
 
-            var existingEventResult = await _eventRepository.GetAsync(
+            var existingEventResult = await _eventRepository.GetEntityAsync(
                 e => e.Id == request.Id,
                 e => e.Packages,
                 e => e.Category,
@@ -137,7 +137,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             if (!existingEventResult.Succeeded || existingEventResult.Result == null)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Event not found." };
 
-            var existingEvent = existingEventResult.Result.MapTo<EventEntity>();
+            var existingEvent = existingEventResult.Result;
 
             var categoryExists = await _categoryRepository.ExistsAsync(c => c.Id == request.CategoryId);
             if (!categoryExists.Succeeded)
@@ -147,6 +147,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
             if (!statusExists.Succeeded)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Status not found" };
 
+            existingEvent.Packages.Clear();
             foreach (var package in request.Packages)
             {
                 existingEvent.Packages.Add(new EventPackageEntity
@@ -220,7 +221,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
                 Id = c.Id,
                 Name = c.Name,
             });
-            return new EventResult<IEnumerable<EventCategory>> { Succeeded = true, StatusCode = 200, Result = mappedResult };
+            return new EventResult<IEnumerable<EventCategory>> { Succeeded = true, StatusCode = 200, Result = result.Result };
         }
         catch (Exception ex)
         {
