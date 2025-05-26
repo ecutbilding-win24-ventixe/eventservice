@@ -189,11 +189,11 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
         try
         {
             await _eventRepository.BeginTransactionAsync();
-            var eventResult = await _eventRepository.GetAsync(e => e.Id == eventId);
+            var eventResult = await _eventRepository.GetEntityAsync(e => e.Id == eventId, e =>e.Packages);
             if (!eventResult.Succeeded || eventResult.Result == null)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Event not found." };
 
-            var existingEvent = eventResult.Result.MapTo<EventEntity>();
+            var existingEvent = eventResult.Result;
             var deleteResult = await _eventRepository.DeleteAsync(existingEvent);
             await _eventRepository.CommitTransactionAsync();
             return deleteResult.Succeeded

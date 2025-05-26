@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class DeleteeventPackage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,19 +25,16 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventPackagesDetail",
+                name: "EventPackagesType",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SeatingArragement = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Placement = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Currency = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    SeatingArragement = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventPackagesDetail", x => x.Id);
+                    table.PrimaryKey("PK_EventPackagesType", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,8 +62,7 @@ namespace Data.Migrations
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    StatusId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventPackageDetailId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    StatusId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -78,12 +74,6 @@ namespace Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Events_EventPackagesDetail_EventPackageDetailId",
-                        column: x => x.EventPackageDetailId,
-                        principalTable: "EventPackagesDetail",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Events_EventStatuses_StatusId",
                         column: x => x.StatusId,
                         principalTable: "EventStatuses",
@@ -91,15 +81,48 @@ namespace Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "EventPackages",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PackageTypeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Placement = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Currency = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventPackages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventPackages_EventPackagesType_PackageTypeId",
+                        column: x => x.PackageTypeId,
+                        principalTable: "EventPackagesType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventPackages_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventPackages_EventId",
+                table: "EventPackages",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventPackages_PackageTypeId",
+                table: "EventPackages",
+                column: "PackageTypeId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Events_CategoryId",
                 table: "Events",
                 column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Events_EventPackageDetailId",
-                table: "Events",
-                column: "EventPackageDetailId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_StatusId",
@@ -111,13 +134,16 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "EventPackages");
+
+            migrationBuilder.DropTable(
+                name: "EventPackagesType");
+
+            migrationBuilder.DropTable(
                 name: "Events");
 
             migrationBuilder.DropTable(
                 name: "EventCategories");
-
-            migrationBuilder.DropTable(
-                name: "EventPackagesDetail");
 
             migrationBuilder.DropTable(
                 name: "EventStatuses");
