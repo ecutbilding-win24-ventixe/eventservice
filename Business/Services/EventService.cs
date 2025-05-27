@@ -1,9 +1,9 @@
 ﻿using Business.Interfaces;
 using Business.Models;
 using Business.Models.Requests;
+using Business.Models.Response;
 using Data.Entities;
 using Data.Interfaces;
-using Domain.Extensions;
 using Domain.Models.Event;
 
 namespace Business.Services;
@@ -189,7 +189,7 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
         try
         {
             await _eventRepository.BeginTransactionAsync();
-            var eventResult = await _eventRepository.GetEntityAsync(e => e.Id == eventId, e =>e.Packages);
+            var eventResult = await _eventRepository.GetEntityAsync(e => e.Id == eventId, e => e.Packages);
             if (!eventResult.Succeeded || eventResult.Result == null)
                 return new EventResult { Succeeded = false, StatusCode = 404, Message = "Event not found." };
 
@@ -270,5 +270,35 @@ public class EventService(IEventRepository eventRepository, IEventCategoryReposi
         {
             return new EventResult<IEnumerable<EventPackageType>> { Succeeded = false, Message = $"An error occurred while retrieving event packages. {ex.Message}" };
         }
+    }
+
+
+    public async Task<EventResult<EventDetailResponse>> GetEventBookingDetails(string id)
+    {
+        var result = await _eventRepository.GetEntityAsync(e => e.Id == id, e => e.Packages);
+
+        if (!result.Succeeded || result.Result == null)
+            return new EventResult<EventDetailResponse> { Succeeded = false, StatusCode = 404, Message = "Event not found" };
+
+        var entity = result.Result;
+        var response = new EventDetailResponse
+        {
+            Id = entity.Id,
+            Capacity = entity.Capacity,
+            Packages = entity.Packages.Select(p => new PackageResponse
+            {
+                EventPriceId = p.Id,
+                PackageTypeId = p.PackageTypeId,
+                Price = p.Price,
+                Currency = p.Currency,
+                Name = p.PackageType?.Title!
+            }).ToList()
+        };
+        return new EventResult<EventDetailResponse>
+        {
+            Succeeded = true,
+            StatusCode = 200,
+            Result = response
+        };
     }
 }

@@ -94,4 +94,13 @@ public class EventsController(IEventService eventService) : ControllerBase
             ? Ok(result)
             : StatusCode(result.StatusCode, result);
     }
+
+    [HttpGet("{id}/booking-details")]
+    public async Task<IActionResult> GetEventBookingDetails(string id)
+    {
+        var result = await _eventService.GetEventBookingDetails(id);
+        return result.Succeeded
+            ? Ok(result)
+            : StatusCode(result.StatusCode, result);
+    }
 }
