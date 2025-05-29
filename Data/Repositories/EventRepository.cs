@@ -112,14 +112,17 @@ public class EventRepository(DataContext context) : BaseRepository<EventEntity, 
                 ImageUrl = entity.ImageUrl,
                 Category = new EventCategory
                 {
+                    Id = entity.Category.Id,
                     Name = entity.Category.Name,
                 },
                 Status = new EventStatus
                 {
+                    Id = entity.Status.Id,
                     Name = entity.Status.Name,
                 },
                 Packages = entity.Packages.Select(p => new EventPackage
                 {
+                    Id = p.PackageTypeId,
                     Title = p.PackageType.Title,
                     SeatingArragement = p.PackageType.SeatingArragement,
                     Placement = p.Placement,
